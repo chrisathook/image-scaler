@@ -5,9 +5,15 @@
 const _ = require('lodash');
 const jimp = require ('jimp');
 const glob = require ('glob');
+const path = require ('path');
 
-const source = './_source';
-const dist = './_out';
+
+
+const sizeAndScale = require ('./src/ImageOperations').sizeAndScale;
+
+const source = path.resolve(process.cwd() ,'_source');
+const dist = path.resolve(process.cwd() ,'_out');
+
 
 let run = function (){
   
@@ -15,7 +21,22 @@ let run = function (){
   
   let files = findInDir(source,'**/*.png');
   
-  console.log (files);
+  
+  let ip = [];
+  
+  _.forEach(files,function (value,index) {
+  
+    ip.push (sizeAndScale (
+  
+      path.resolve (source,value),
+      path.resolve (dist,value)
+      
+    ))
+    
+    
+    
+  })
+  
   
 };
 
@@ -28,6 +49,12 @@ let findInDir = function (dir,pattern) {
   
   
 };
+
+
+
+
+
+
 
 
 run();
