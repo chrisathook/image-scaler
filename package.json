@@ -1,0 +1,19 @@
+{
+  "name": "image-scaler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrisathook/image-scaler.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chrisathook/image-scaler/issues"
+  },
+  "homepage": "https://github.com/chrisathook/image-scaler#readme"
+}
