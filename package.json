@@ -18,6 +18,7 @@
   "homepage": "https://github.com/chrisathook/image-scaler#readme",
   "dependencies": {
     "glob": "^7.1.1",
+    "image-size": "^0.5.1",
     "jimp": "^0.2.27",
     "lodash": "^4.17.4"
   }

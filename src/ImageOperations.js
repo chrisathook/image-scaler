@@ -3,17 +3,26 @@
  */
 "use strict";
 const _ = require('lodash');
-const jimp = require('jimp');
+const Jimp = require('jimp');
+const imageSize = require('image-size');
 
+const kb=1024;
 
 let sizeAndScale = function (imagePath, outputPath, scale = 1, sizeInKB = 100) {
   return new Promise(function (resolve, reject) {
-    jimp.read(imagePath).then(function (image) {
-      image.write(outputPath,function (value){
+    Jimp.read(imagePath).then(function (image) {
+  
+      let size = 0;
+  
+      let imageBuffer = image.getBuffer (Jimp.AUTO,function (err,value){
+        size = imageSize (value);
+        size
         
-        resolve ()
-        
-      })
+      });
+      
+     
+      
+      
     })
   })
 };
