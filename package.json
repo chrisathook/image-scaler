@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/chrisathook/image-scaler/issues"
   },
-  "homepage": "https://github.com/chrisathook/image-scaler#readme"
+  "homepage": "https://github.com/chrisathook/image-scaler#readme",
+  "dependencies": {
+    "glob": "^7.1.1",
+    "jimp": "^0.2.27",
+    "lodash": "^4.17.4"
+  }
 }
