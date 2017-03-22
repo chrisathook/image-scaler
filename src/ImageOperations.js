@@ -24,7 +24,7 @@ let sizeAndScale = function (imagePath, outputPath, scale = 1, sizeInKB = 200) {
     };
     let run = function (image, cb) {
       quality -= 1;
-      let currentImage = image.clone().quality(quality);
+      let currentImage = image.clone().scale(scale).quality(quality);
       bufferReport(currentImage, Jimp.MIME_JPEG).then(function (report) {
         if (report.kb <= sizeInKB) {
           finalImage = currentImage;
