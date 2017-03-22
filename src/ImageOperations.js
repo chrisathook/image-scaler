@@ -3,6 +3,10 @@
  */
 "use strict";
 const Jimp = require('jimp');
+const path = require('path');
+const fs = require('fs-plus');
+const rimraf = require('rimraf');
+
 const kb = 1024;
 let sizeAndScale = function (imagePath, outputPath, scale = 1, sizeInKB = 200) {
   return new Promise(function (resolve, reject) {
@@ -11,6 +15,12 @@ let sizeAndScale = function (imagePath, outputPath, scale = 1, sizeInKB = 200) {
     let finalImage = null;
     let callback = function (report, imageGood = false) {
       if (imageGood === true) {
+  
+        if (!fs.existsSync (path.parse (outputPath).dir )) {
+          fs.makeTreeSync (path.parse (outputPath).dir );
+    
+        }
+        
         finalImage.write(outputPath.replace('.png', '.jpg'), function (err, value) {
           resolve()
         });

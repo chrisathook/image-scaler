@@ -28,7 +28,7 @@ let run = function () {
     fs.makeTreeSync (dist);
   }
   
-  return;
+  
   
   _.forEach(files, function (value, index) {
     ip.push(sizeAndScale(
