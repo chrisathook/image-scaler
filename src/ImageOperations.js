@@ -35,7 +35,14 @@ let processAndReport = function (imagePath, outputPath, scale, quality, prefligh
   return new Promise(function (resolve, reject) {
     if (preflight === true) {
       outputPath = path.resolve(os.tmpdir(), path.parse(outputPath).base);
+    }else {
+      if (!fs.existsSync(path.parse(outputPath).dir)) {
+        fs.makeTreeSync(path.parse(outputPath).dir);
+      }
+      
     }
+    
+    
     gm(imagePath)
       .strip()
       .quality(quality)
@@ -45,7 +52,7 @@ let processAndReport = function (imagePath, outputPath, scale, quality, prefligh
         } else {
           let stats = fs.statSync(outputPath);
           if (preflight === true) {
-            del.sync(outputPath);
+            del.sync(outputPath,{force: true});
           }
           resolve(stats);
         }
