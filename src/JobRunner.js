@@ -3,13 +3,43 @@
  */
 "use strict";
 const _ = require('lodash');
+const path = require('path');
+const glob = require('glob');
+//
+const sizeAndScale = require('../src/ImageOperations').sizeAndScale;
+//
 let JobConfig = function (sourceDir, outputDir, name = 'defaultName', scale = 1, targetKB = 100) {
   return {name: name, scale: scale, targetKB: targetKB, sourceDir: sourceDir, outputDir: outputDir};
 };
 let RunJob = function (jobConfig) {
   return new Promise(function (resolve, reject) {
     let files = findInDir(jobConfig.sourceDir, '**/*.png');
+    // generator
+    function *run() {
+      for (let value of files) {
+        let ret = sizeAndScale(
+          path.resolve(jobConfig.sourceDir, value),
+          path.resolve(jobConfig.outputDir, value),
+          jobConfig.scale,
+          jobConfig.targetKB
+        );
+        yield ret
+      }
+    }
     
+    const iterator = run();
+    
+    function step() {
+      let item = iterator.next();
+      if (!item.done) {
+        item.value.then(step);
+      }else {
+        
+        resolve()
+      }
+    }
+    
+    step();
   })
 };
 let findInDir = function (dir, pattern) {

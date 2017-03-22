@@ -22,13 +22,14 @@ let sizeAndScale = function (imagePath, outputPath, scale = 1, sizeInKB = 200) {
         }
         
         finalImage.write(outputPath.replace('.png', '.jpg'), function (err, value) {
-          resolve()
+          resolve(outputPath + " DONE")
         });
       } else {
         if (quality > 10) {
           run(startingImage, callback);
         } else {
-          reject('Image Cannot Be Made At this File Weight')
+          resolve(outputPath + " FAILED")
+          //reject('Image Cannot Be Made At this File Weight')
         }
       }
     };
