@@ -8,13 +8,13 @@ const os = require('os');
 const gm = require('gm');
 const del = require('del');
 const kb = 1024;
-let sizeAndScale = function (imagePath, outputPath, scale = 1, targetKB = 200) {
+let sizeAndScale = function (imagePath, outputPath, scale = 100, targetKB = 200) {
   return new Promise(function (resolve, reject) {
-    let quality = 20;
+    let quality = 101;
     let step = function () {
       quality -= 1;
       processAndReport(imagePath, outputPath, scale, quality, true).then(function (stats) {
-        console.log(stats);
+        
         let size = Math.round(stats.size / kb);
         // image is the file size we want
         if (size <= targetKB) {
@@ -45,6 +45,7 @@ let processAndReport = function (imagePath, outputPath, scale, quality, prefligh
     
     gm(imagePath)
       .strip()
+      .resize (`${scale}%`,`${scale}%`)
       .quality(quality)
       .write(outputPath, function (err) {
         if (err) {

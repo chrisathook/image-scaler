@@ -8,7 +8,7 @@ const glob = require('glob');
 //
 const sizeAndScale = require('../src/ImageOperations').sizeAndScale;
 //
-let JobConfig = function (sourceDir, outputDir, name = 'defaultName', scale = 1, targetKB = 100) {
+let JobConfig = function (sourceDir, outputDir,  scale , targetKB,name = 'defaultName' ) {
   return {name: name, scale: scale, targetKB: targetKB, sourceDir: sourceDir, outputDir: outputDir};
 };
 let RunJob = function (jobConfig) {
