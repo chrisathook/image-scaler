@@ -8,17 +8,19 @@ const glob = require('glob');
 const path = require('path');
 const fs = require('fs-plus');
 const rimraf = require('rimraf');
-
+//
 
 const sizeAndScale = require('./src/ImageOperations').sizeAndScale;
+const JobConfig = require('./src/JobRunner').JobConfig;
+const RunJob = require('./src/JobRunner').RunJob;
+//
 const source = path.resolve(process.cwd(), '_source');
 const dist = path.resolve(process.cwd(), '_out');
 
 
 let run = function () {
   console.log('hello world');
-  let files = findInDir(source, '**/*.png');
-  let ip = [];
+
   
   if (!fs.existsSync (dist)) {
     fs.makeTreeSync (dist);
@@ -28,16 +30,16 @@ let run = function () {
     fs.makeTreeSync (dist);
   }
   
+  let jobOne = JobConfig(source,dist);
   
   
-  _.forEach(files, function (value, index) {
-    ip.push(sizeAndScale(
-      path.resolve(source, value),
-      path.resolve(dist, value)
-    ))
+  RunJob(jobOne).then (function (){
+    
+    console.log ('job done')
+    
   })
+  
+  
 };
-let findInDir = function (dir, pattern) {
-  return glob.sync(pattern, {cwd: dir})
-};
+
 run();
