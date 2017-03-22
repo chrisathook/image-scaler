@@ -20,7 +20,7 @@ let run = function () {
     rimraf.sync(dist);
     fs.makeTreeSync(dist);
   }
-  let jobOne = JobConfig(source, dist,1,200);
+  let jobOne = JobConfig(source, dist,1,100);
   RunJob(jobOne).then(function () {
     console.log('job done')
   })

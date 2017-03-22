@@ -2,62 +2,55 @@
  * Created by Christopher on 3/21/2017.
  */
 "use strict";
-const Jimp = require('jimp');
 const path = require('path');
 const fs = require('fs-plus');
-const rimraf = require('rimraf');
-
+const os = require('os');
+const gm = require('gm');
+const del = require('del');
 const kb = 1024;
-let sizeAndScale = function (imagePath, outputPath, scale = 1, sizeInKB = 200) {
+let sizeAndScale = function (imagePath, outputPath, scale = 1, targetKB = 200) {
   return new Promise(function (resolve, reject) {
     let quality = 20;
-    let startingImage = null;
-    let finalImage = null;
-    let callback = function (report, imageGood = false) {
-      if (imageGood === true) {
-  
-        if (!fs.existsSync (path.parse (outputPath).dir )) {
-          fs.makeTreeSync (path.parse (outputPath).dir );
-    
-        }
-        
-        finalImage.write(outputPath.replace('.png', '.jpg'), function (err, value) {
-          resolve(outputPath + " DONE")
-        });
-      } else {
-        if (quality > 10) {
-          run(startingImage, callback);
-        } else {
-          resolve(outputPath + " FAILED")
-          //reject('Image Cannot Be Made At this File Weight')
-        }
-      }
-    };
-    let run = function (image, cb) {
+    let step = function () {
       quality -= 1;
-      let currentImage = image.clone().scale(scale).quality(quality);
-      bufferReport(currentImage, Jimp.MIME_JPEG).then(function (report) {
-        if (report.kb <= sizeInKB) {
-          finalImage = currentImage;
-          cb(report, true);
+      processAndReport(imagePath, outputPath, scale, quality, true).then(function (stats) {
+        console.log(stats);
+        let size = Math.round(stats.size / kb);
+        // image is the file size we want
+        if (size <= targetKB) {
+          processAndReport(imagePath, outputPath, scale, quality, false).then(function (stats) {
+            
+            resolve(stats)
+            
+          })
         } else {
-          cb(report, false);
+          step()
         }
       })
     };
-    Jimp.read(imagePath).then(function (image) {
-      startingImage = image;
-      run(startingImage, callback);
-    });
+    step()
   })
 };
-let bufferReport = function (image, mime = Jimp.AUTO) {
+let processAndReport = function (imagePath, outputPath, scale, quality, preflight = true) {
   return new Promise(function (resolve, reject) {
-    image.getBuffer(mime, function (err, value) {
-      let size = value.byteLength;
-      resolve({size: size, kb: Math.ceil(size / kb)})
-    });
-  })
+    if (preflight === true) {
+      outputPath = path.resolve(os.tmpdir(), path.parse(outputPath).base);
+    }
+    gm(imagePath)
+      .strip()
+      .quality(quality)
+      .write(outputPath, function (err) {
+        if (err) {
+          throw Error(err);
+        } else {
+          let stats = fs.statSync(outputPath);
+          if (preflight === true) {
+            del.sync(outputPath);
+          }
+          resolve(stats);
+        }
+      })
+  });
 };
 module.exports = {
   sizeAndScale: sizeAndScale

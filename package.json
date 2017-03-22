@@ -18,8 +18,10 @@
   "homepage": "https://github.com/chrisathook/image-scaler#readme",
   "dependencies": {
     "co": "^4.6.0",
+    "del": "^2.2.2",
     "fs-plus": "^3.0.0",
     "glob": "^7.1.1",
+    "gm": "^1.23.0",
     "image-size": "^0.5.1",
     "jimp": "^0.2.27",
     "lodash": "^4.17.4",

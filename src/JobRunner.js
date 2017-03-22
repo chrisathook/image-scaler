@@ -19,7 +19,7 @@ let RunJob = function (jobConfig) {
       for (let value of files) {
         let ret = sizeAndScale(
           path.resolve(jobConfig.sourceDir, value),
-          path.resolve(jobConfig.outputDir, value),
+          path.resolve(jobConfig.outputDir, value.replace ('.png','.jpg')),
           jobConfig.scale,
           jobConfig.targetKB
         );
