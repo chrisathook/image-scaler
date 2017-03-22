@@ -6,13 +6,30 @@ const _ = require('lodash');
 const jimp = require('jimp');
 const glob = require('glob');
 const path = require('path');
+const fs = require('fs-plus');
+const rimraf = require('rimraf');
+
+
 const sizeAndScale = require('./src/ImageOperations').sizeAndScale;
 const source = path.resolve(process.cwd(), '_source');
 const dist = path.resolve(process.cwd(), '_out');
+
+
 let run = function () {
   console.log('hello world');
   let files = findInDir(source, '**/*.png');
   let ip = [];
+  
+  if (!fs.existsSync (dist)) {
+    fs.makeTreeSync (dist);
+  
+  }else {
+    rimraf.sync (dist);
+    fs.makeTreeSync (dist);
+  }
+  
+  return;
+  
   _.forEach(files, function (value, index) {
     ip.push(sizeAndScale(
       path.resolve(source, value),
