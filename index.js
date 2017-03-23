@@ -28,7 +28,13 @@ let run = function () {
       200, // set the goal file weight
       'jobOne' // give job a name
     ),
-    JobConfig(source, dist, 50, 50, 100, 'jobTwo')
+    JobConfig(source,
+      dist,
+      50, // set min jpeg compression, won't compress harder than this
+      50, // set scale, 100 = no scale, 50 = 1/2
+      100, // set the goal file weight
+      'jobTwo' // give job a name
+    )
   ];
   const queue = JobQueue();
   queue.runJobs(jobs).then(function () {
