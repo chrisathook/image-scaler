@@ -8,22 +8,27 @@ const os = require('os');
 const gm = require('gm');
 const del = require('del');
 const kb = 1024;
-let sizeAndScale = function (imagePath, outputPath, scale = 100, targetKB = 200) {
+let sizeAndScale = function (imagePath, outputPath,minQuality, scale, targetKB ) {
   return new Promise(function (resolve, reject) {
     let quality = 101;
     let step = function () {
       quality -= 1;
       processAndReport(imagePath, outputPath, scale, quality, true).then(function (stats) {
-        
         let size = Math.round(stats.size / kb);
-        // image is the file size we want
-        if (size <= targetKB) {
+  
+        // image will never be what we want
+        if (quality <minQuality &&  size >targetKB ) {
+          
+          resolve ({success:false,stats:stats});
+          
+        }else if (size <= targetKB) {
+          // image is the file size we want
           processAndReport(imagePath, outputPath, scale, quality, false).then(function (stats) {
-            
-            resolve(stats)
+            resolve ({success:true,stats:stats});
             
           })
         } else {
+          // image too big, run again
           step()
         }
       })
@@ -35,17 +40,14 @@ let processAndReport = function (imagePath, outputPath, scale, quality, prefligh
   return new Promise(function (resolve, reject) {
     if (preflight === true) {
       outputPath = path.resolve(os.tmpdir(), path.parse(outputPath).base);
-    }else {
+    } else {
       if (!fs.existsSync(path.parse(outputPath).dir)) {
         fs.makeTreeSync(path.parse(outputPath).dir);
       }
-      
     }
-    
-    
     gm(imagePath)
       .strip()
-      .resize (`${scale}%`,`${scale}%`)
+      .resize(`${scale}%`, `${scale}%`)
       .quality(quality)
       .write(outputPath, function (err) {
         if (err) {
@@ -53,7 +55,7 @@ let processAndReport = function (imagePath, outputPath, scale, quality, prefligh
         } else {
           let stats = fs.statSync(outputPath);
           if (preflight === true) {
-            del.sync(outputPath,{force: true});
+            del.sync(outputPath, {force: true});
           }
           resolve(stats);
         }

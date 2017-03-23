@@ -8,8 +8,15 @@ const glob = require('glob');
 //
 const sizeAndScale = require('../src/ImageOperations').sizeAndScale;
 //
-let JobConfig = function (sourceDir, outputDir,  scale , targetKB,name = 'defaultName' ) {
-  return {name: name, scale: scale, targetKB: targetKB, sourceDir: sourceDir, outputDir: outputDir};
+let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, name = 'defaultName') {
+  return {
+    name: name,
+    scale: scale,
+    targetKB: targetKB,
+    minQuality: minQuality,
+    sourceDir: sourceDir,
+    outputDir: outputDir
+  };
 };
 let RunJob = function (jobConfig) {
   return new Promise(function (resolve, reject) {
@@ -19,7 +26,8 @@ let RunJob = function (jobConfig) {
       for (let value of files) {
         let ret = sizeAndScale(
           path.resolve(jobConfig.sourceDir, value),
-          path.resolve(jobConfig.outputDir,jobConfig.name, value.replace ('.png','.jpg')),
+          path.resolve(jobConfig.outputDir, jobConfig.name, value.replace('.png', '.jpg')),
+          jobConfig.minQuality,
           jobConfig.scale,
           jobConfig.targetKB
         );
@@ -33,8 +41,7 @@ let RunJob = function (jobConfig) {
       let item = iterator.next();
       if (!item.done) {
         item.value.then(step);
-      }else {
-        
+      } else {
         resolve()
       }
     }
