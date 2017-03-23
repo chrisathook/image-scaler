@@ -21,7 +21,13 @@ let run = function () {
     fs.makeTreeSync(dist);
   }
   let jobs = [
-    JobConfig(source, dist, 50, 100, 200, 'jobOne'),
+    JobConfig(source,
+      dist,
+      50, // set min jpeg compression, won't compress harder than this
+      100, // set scale, 100 = no scale, 50 = 1/2
+      200, // set the goal file weight
+      'jobOne' // give job a name
+    ),
     JobConfig(source, dist, 50, 50, 100, 'jobTwo')
   ];
   const queue = JobQueue();
