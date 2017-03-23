@@ -24,7 +24,7 @@ let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, nam
   return {
     name: name,
     scale: scale,
-    targetKB: targetKB,
+    targetKB: targetKB-1,
     minQuality: minQuality,
     sourceDir: sourceDir,
     outputDir: outputDir
