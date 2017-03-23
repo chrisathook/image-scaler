@@ -5,6 +5,8 @@
 const _ = require('lodash');
 const path = require('path');
 const glob = require('glob');
+const json2csv = require('json2csv');
+const imageSize = require('image-size');
 //
 const sizeAndScale = require('../src/ImageOperations').sizeAndScale;
 //
@@ -47,6 +49,22 @@ let RunJob = function (jobConfig) {
     }
     
     step();
+  })
+};
+let reportJob = function (files, jobConfig) {
+  return new Promise(function (resolve, reject) {
+    const fields = ['Image Path', 'Starting KB', 'Final KB', 'Starting Dimensions', 'End Dimensions', 'Successful Conversion'];
+  
+    let reportJSON =
+    
+    for (let value of files) {
+    
+    
+    
+    
+    }
+    
+    
   })
 };
 let findInDir = function (dir, pattern) {
