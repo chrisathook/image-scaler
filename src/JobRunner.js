@@ -3,7 +3,7 @@
  */
 "use strict";
 const path = require('path');
-const glob = require('glob');
+const glob = require('glob-all');
 const json2csv = require('json2csv');
 const fs = require('fs-plus');
 //
@@ -70,7 +70,7 @@ let JobQueue = function () {
 };
 let RunJob = function (jobConfig) {
   return new Promise(function (resolve, reject) {
-    let files = findInDir(jobConfig.sourceDir, '**/*.png');
+    let files = findInDir(jobConfig.sourceDir,['**/*.png','**/*.jpg'] );
     // generator
     function *run() {
       for (let value of files) {
@@ -176,8 +176,8 @@ let JobReporter = function () {
     printReport: printReport
   };
 };
-let findInDir = function (dir, pattern) {
-  return glob.sync(pattern, {cwd: dir})
+let findInDir = function (dir, patterns) {
+  return glob.sync(patterns, {cwd: dir})
 };
 module.exports = {
   JobConfig: JobConfig,
