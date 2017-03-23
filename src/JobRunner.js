@@ -6,10 +6,20 @@ const path = require('path');
 const glob = require('glob');
 const json2csv = require('json2csv');
 const fs = require('fs-plus');
-
 //
 const sizeAndScale = require('../src/ImageOperations').sizeAndScale;
 //
+/**
+ *
+ * @param sourceDir Root directory were pngs are
+ * @param outputDir Root directory where files will be wrtten too
+ * @param minQuality Use like Photoshop jpeg quality
+ * @param scale Scaling factor 0-100
+ * @param targetKB Desired File size
+ * @param name name for job, will also be name for folder.
+ * @returns {{name: string, scale: *, targetKB: *, minQuality: *, sourceDir: *, outputDir: *}}
+ * @constructor
+ */
 let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, name = 'defaultName') {
   return {
     name: name,
@@ -19,6 +29,44 @@ let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, nam
     sourceDir: sourceDir,
     outputDir: outputDir
   };
+};
+let JobQueue = function () {
+  let runSingleJob = function (config) {
+    return RunJob(config);
+  };
+  let runJobs = function (jobsArray) {
+    return new Promise(function (resolve, reject) {
+      function *run() {
+        for (let value of jobsArray) {
+          yield {config: value, promise: runSingleJob(value)};
+        }
+      }
+      
+      const iterator = run();
+      
+      function step() {
+        let item = iterator.next();
+        if (!item.done) {
+          console.log(`job start ${item.value.config.name}`);
+          
+          item.value.promise.then (function (){
+  
+            console.log(`job done ${item.value.config.name}`);
+            
+          }).then(step);
+        } else {
+          
+          resolve()
+        }
+      }
+      
+      step();
+    });
+  };
+  return {
+    runSingleJob: runSingleJob,
+    runJobs: runJobs,
+  }
 };
 let RunJob = function (jobConfig) {
   return new Promise(function (resolve, reject) {
@@ -59,8 +107,7 @@ let RunJob = function (jobConfig) {
           .then(step);
       } else {
         reporter.printReport(
-          path.resolve(jobConfig.outputDir,jobConfig.name,jobConfig.name+'.csv')
-          
+          path.resolve(jobConfig.outputDir, jobConfig.name, jobConfig.name + '.csv')
         );
         resolve()
       }
@@ -82,29 +129,26 @@ let JobReporter = function () {
   let printReport = function (filePath) {
     return new Promise(function (resolve, reject) {
       let csv = json2csv({data: _queue, fields: _fields});
-  
-      fs.writeFile(filePath, csv, function(err) {
+      fs.writeFile(filePath, csv, function (err) {
         if (err) {
-  
           reject(err);
         }
-        console.log('file saved');
+        
         resolve()
       });
-      
     });
   };
-  return  {
+  return {
     createQueue: createQueue,
     appendLine: appendLine,
     printReport: printReport
   };
 };
-
 let findInDir = function (dir, pattern) {
   return glob.sync(pattern, {cwd: dir})
 };
 module.exports = {
   JobConfig: JobConfig,
-  RunJob: RunJob
+  RunJob: RunJob,
+  JobQueue: JobQueue
 };
