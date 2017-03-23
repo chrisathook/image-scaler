@@ -2,11 +2,11 @@
  * Created by Christopher on 3/22/2017.
  */
 "use strict";
-const _ = require('lodash');
 const path = require('path');
 const glob = require('glob');
 const json2csv = require('json2csv');
-const imageSize = require('image-size');
+const fs = require('fs-plus');
+
 //
 const sizeAndScale = require('../src/ImageOperations').sizeAndScale;
 //
@@ -38,12 +38,30 @@ let RunJob = function (jobConfig) {
     }
     
     const iterator = run();
-    
+    const reporter = JobReporter();
+    reporter.createQueue(
+      ['Image Path', 'Final KB', 'Final Width', 'Final Height', 'Successful Conversion']
+    );
     function step() {
       let item = iterator.next();
       if (!item.done) {
-        item.value.then(step);
+        item.value
+          .then(function (value) {
+            let lineItem = {
+              "Image Path": value.path,
+              "Final KB": value.stats.size,
+              "Final Width": value.dimensions.width,
+              "Final Height": value.dimensions.height,
+              "Successful Conversion": value.success
+            };
+            reporter.appendLine(lineItem)
+          })
+          .then(step);
       } else {
+        reporter.printReport(
+          path.resolve(jobConfig.outputDir,jobConfig.name,jobConfig.name+'.csv')
+          
+        );
         resolve()
       }
     }
@@ -51,22 +69,38 @@ let RunJob = function (jobConfig) {
     step();
   })
 };
-let reportJob = function (files, jobConfig) {
-  return new Promise(function (resolve, reject) {
-    const fields = ['Image Path', 'Starting KB', 'Final KB', 'Starting Dimensions', 'End Dimensions', 'Successful Conversion'];
+let JobReporter = function () {
+  let _queue = [];
+  let _fields = [];
+  let createQueue = function (fields) {
+    _queue = [];
+    _fields = fields;
+  };
+  let appendLine = function (lineItem) {
+    _queue.push(lineItem);
+  };
+  let printReport = function (filePath) {
+    return new Promise(function (resolve, reject) {
+      let csv = json2csv({data: _queue, fields: _fields});
   
-    let reportJSON =
-    
-    for (let value of files) {
-    
-    
-    
-    
-    }
-    
-    
-  })
+      fs.writeFile(filePath, csv, function(err) {
+        if (err) {
+  
+          reject(err);
+        }
+        console.log('file saved');
+        resolve()
+      });
+      
+    });
+  };
+  return  {
+    createQueue: createQueue,
+    appendLine: appendLine,
+    printReport: printReport
+  };
 };
+
 let findInDir = function (dir, pattern) {
   return glob.sync(pattern, {cwd: dir})
 };
