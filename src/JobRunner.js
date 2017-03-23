@@ -96,7 +96,7 @@ let RunJob = function (jobConfig) {
         item.value
           .then(function (value) {
             let lineItem = {
-              "Image Path": value.path,
+              "Image Path": value.path.replace (jobConfig.outputDir,''),
               "Final KB": value.stats.size,
               "Final Width": value.dimensions.width,
               "Final Height": value.dimensions.height,
