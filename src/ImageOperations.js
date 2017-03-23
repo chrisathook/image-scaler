@@ -19,18 +19,46 @@ let sizeAndScale = function (imagePath, outputPath, minQuality, scale, targetKB)
         results.stats.size = size;
         // image will never be what we want
         if (quality < minQuality && size > targetKB) {
-          resolve({success: false, stats: results.stats, dimensions: results.dimensions, path: outputPath});
+          resolve({
+            success: false,
+            stats: results.stats,
+            dimensions: results.dimensions,
+            path: outputPath,
+            notes: `File cannot be converted to these dimensions and fileweight:   Target:${targetKB}KB    Actual:${size}KB  `
+          
+          });
         } else if (size <= targetKB) {
           // image is the file size we want
           processAndReport(imagePath, outputPath, scale, quality, false).then(function (results) {
-            results.stats.size= Math.round(results.stats.size / kb);
-            
-            resolve({success: true, stats: results.stats, dimensions: results.dimensions, path: outputPath});
+            results.stats.size = Math.round(results.stats.size / kb);
+            resolve({
+              success: true,
+              stats: results.stats,
+              dimensions: results.dimensions,
+              path: outputPath,
+              notes: ''
+            });
+          }).catch(function (err) {
+            resolve({
+              success: false,
+              stats: null,
+              dimensions: null,
+              path: outputPath,
+              notes: `Could Not Write File   ${err}`
+            });
           })
         } else {
           // image too big, run again
           step()
         }
+      }).catch(function (err) {
+        resolve({
+          success: false,
+          stats: null,
+          dimensions: null,
+          path: outputPath,
+          notes: `Could Not Write File   ${err}`
+        });
       })
     };
     step()
@@ -51,7 +79,8 @@ let processAndReport = function (imagePath, outputPath, scale, quality, prefligh
       .quality(quality)
       .write(outputPath, function (err) {
         if (err) {
-          throw Error(err);
+          console.error(err);
+          reject(`${imagePath}   ${outputPath} `);
         } else {
           let stats = fs.statSync(outputPath);
           let dimensions = imageSize(outputPath);

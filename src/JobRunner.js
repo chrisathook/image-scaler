@@ -24,7 +24,7 @@ let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, nam
   return {
     name: name,
     scale: scale,
-    targetKB: targetKB-1,
+    targetKB: targetKB,
     minQuality: minQuality,
     sourceDir: sourceDir,
     outputDir: outputDir
@@ -88,20 +88,52 @@ let RunJob = function (jobConfig) {
     const iterator = run();
     const reporter = JobReporter();
     reporter.createQueue(
-      ['Image Path', 'Final KB', 'Final Width', 'Final Height', 'Successful Conversion']
+      ['Image Path', 'Final KB', 'Final Width', 'Final Height', 'Successful Conversion','Notes']
     );
     function step() {
       let item = iterator.next();
       if (!item.done) {
         item.value
           .then(function (value) {
-            let lineItem = {
-              "Image Path": value.path.replace (jobConfig.outputDir,''),
-              "Final KB": value.stats.size,
-              "Final Width": value.dimensions.width,
-              "Final Height": value.dimensions.height,
-              "Successful Conversion": value.success
-            };
+            let lineItem ={};
+  
+            if (value.success ===true) {
+  
+  
+              lineItem = {
+                "Image Path": value.path.replace (jobConfig.outputDir,''),
+                "Final KB": value.stats.size,
+                "Final Width": value.dimensions.width,
+                "Final Height": value.dimensions.height,
+                "Successful Conversion": value.success,
+                "Notes":value.notes
+              };
+            }else {
+              
+              
+              lineItem = {
+                "Image Path": value.path.replace (jobConfig.outputDir,''),
+                "Final KB": "unknown",
+                "Final Width": "unknown",
+                "Final Height": "unknown",
+                "Successful Conversion": value.success,
+                "Notes":value.notes
+              };
+  
+              if (value.stats !== null){
+  
+                lineItem["Final KB"] = value.stats.size;
+                lineItem["Final Width"] = value.dimensions.width;
+                lineItem["Final Height"] = value.dimensions.height;
+                
+              }
+              
+            }
+            
+            
+            
+            
+            
             reporter.appendLine(lineItem)
           })
           .then(step);
