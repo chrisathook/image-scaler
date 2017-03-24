@@ -15,6 +15,7 @@ let JobLoader = function (path, source, dist) {
     jsonfile.readFile(path, function (err, obj) {
       console.dir(obj);
       if (err) {
+        console.error(err);
         reject(err);
       } else {
         let jobsArray = [];
@@ -112,7 +113,7 @@ let RunJob = function (jobConfig) {
     const iterator = run();
     const reporter = JobReporter();
     reporter.createQueue(
-      ['Image Path', 'Final KB', 'Final Width', 'Final Height', 'Successful Conversion', 'Notes']
+      ['Image Path','Target KB', 'Final KB', 'Final Width', 'Final Height', 'Successful Conversion', 'Notes']
     );
     function step() {
       let item = iterator.next();
@@ -123,6 +124,7 @@ let RunJob = function (jobConfig) {
             if (value.success === true) {
               lineItem = {
                 "Image Path": value.path.replace(jobConfig.outputDir, ''),
+                "Target KB": jobConfig.targetKB,
                 "Final KB": value.stats.size,
                 "Final Width": value.dimensions.width,
                 "Final Height": value.dimensions.height,
@@ -132,6 +134,7 @@ let RunJob = function (jobConfig) {
             } else {
               lineItem = {
                 "Image Path": value.path.replace(jobConfig.outputDir, ''),
+                "Target KB": jobConfig.targetKB,
                 "Final KB": "unknown",
                 "Final Width": "unknown",
                 "Final Height": "unknown",
