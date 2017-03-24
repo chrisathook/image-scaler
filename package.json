@@ -26,6 +26,7 @@
     "image-size": "^0.5.1",
     "jimp": "^0.2.27",
     "json2csv": "^3.7.3",
+    "jsonfile": "^2.4.0",
     "lodash": "^4.17.4",
     "mkdirp": "^0.5.1"
   }

@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "name": "Job1",
+      "scale": 100,
+      "targetKB": 200,
+      "minQuality": 40
+    },
+    {
+      "name": "Job2",
+      "scale": 50,
+      "targetKB": 100,
+      "minQuality": 40
+    }
+  ]
+}

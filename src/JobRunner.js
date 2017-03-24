@@ -6,9 +6,37 @@ const path = require('path');
 const glob = require('glob-all');
 const json2csv = require('json2csv');
 const fs = require('fs-plus');
+const jsonfile = require('jsonfile');
 //
 const sizeAndScale = require('../src/ImageOperations').sizeAndScale;
 //
+let JobLoader = function (path, source, dist) {
+  return new Promise(function (resolve, reject) {
+    jsonfile.readFile(path, function (err, obj) {
+      console.dir(obj);
+      if (err) {
+        reject(err);
+      } else {
+        let jobsArray = [];
+        for (let value of obj.jobs) {
+          jobsArray.push(
+            new JobConfig(
+              source,
+              dist,
+              value.minQuality,
+              value.scale,
+              value.targetKB,
+              value.name
+            ))
+        }
+        
+        
+        
+        resolve (jobsArray);
+      }
+    })
+  });
+};
 /**
  *
  * @param sourceDir Root directory were pngs are
@@ -48,14 +76,10 @@ let JobQueue = function () {
         let item = iterator.next();
         if (!item.done) {
           console.log(`job start ${item.value.config.name}`);
-          
-          item.value.promise.then (function (){
-  
+          item.value.promise.then(function () {
             console.log(`job done ${item.value.config.name}`);
-            
           }).then(step);
         } else {
-          
           resolve()
         }
       }
@@ -70,7 +94,7 @@ let JobQueue = function () {
 };
 let RunJob = function (jobConfig) {
   return new Promise(function (resolve, reject) {
-    let files = findInDir(jobConfig.sourceDir,['**/*.png','**/*.jpg'] );
+    let files = findInDir(jobConfig.sourceDir, ['**/*.png', '**/*.jpg']);
     // generator
     function *run() {
       for (let value of files) {
@@ -88,52 +112,38 @@ let RunJob = function (jobConfig) {
     const iterator = run();
     const reporter = JobReporter();
     reporter.createQueue(
-      ['Image Path', 'Final KB', 'Final Width', 'Final Height', 'Successful Conversion','Notes']
+      ['Image Path', 'Final KB', 'Final Width', 'Final Height', 'Successful Conversion', 'Notes']
     );
     function step() {
       let item = iterator.next();
       if (!item.done) {
         item.value
           .then(function (value) {
-            let lineItem ={};
-  
-            if (value.success ===true) {
-  
-  
+            let lineItem = {};
+            if (value.success === true) {
               lineItem = {
-                "Image Path": value.path.replace (jobConfig.outputDir,''),
+                "Image Path": value.path.replace(jobConfig.outputDir, ''),
                 "Final KB": value.stats.size,
                 "Final Width": value.dimensions.width,
                 "Final Height": value.dimensions.height,
                 "Successful Conversion": value.success,
-                "Notes":value.notes
+                "Notes": value.notes
               };
-            }else {
-              
-              
+            } else {
               lineItem = {
-                "Image Path": value.path.replace (jobConfig.outputDir,''),
+                "Image Path": value.path.replace(jobConfig.outputDir, ''),
                 "Final KB": "unknown",
                 "Final Width": "unknown",
                 "Final Height": "unknown",
                 "Successful Conversion": value.success,
-                "Notes":value.notes
+                "Notes": value.notes
               };
-  
-              if (value.stats !== null){
-  
+              if (value.stats !== null) {
                 lineItem["Final KB"] = value.stats.size;
                 lineItem["Final Width"] = value.dimensions.width;
                 lineItem["Final Height"] = value.dimensions.height;
-                
               }
-              
             }
-            
-            
-            
-            
-            
             reporter.appendLine(lineItem)
           })
           .then(step);
@@ -165,7 +175,6 @@ let JobReporter = function () {
         if (err) {
           reject(err);
         }
-        
         resolve()
       });
     });
@@ -182,5 +191,6 @@ let findInDir = function (dir, patterns) {
 module.exports = {
   JobConfig: JobConfig,
   RunJob: RunJob,
-  JobQueue: JobQueue
+  JobQueue: JobQueue,
+  JobLoader: JobLoader
 };
