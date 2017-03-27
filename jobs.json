@@ -4,13 +4,15 @@
       "name": "Job1",
       "scale": 100,
       "targetKB": 200,
-      "minQuality": 40
+      "minQuality": 40,
+      "suffix":"_WIDTHxHEIGHT"
     },
     {
       "name": "Job2",
       "scale": 50,
       "targetKB": 100,
-      "minQuality": 40
+      "minQuality": 40,
+      "suffix":"_WIDTHxHEIGHT"
     }
   ]
 }

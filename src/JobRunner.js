@@ -7,6 +7,7 @@ const glob = require('glob-all');
 const json2csv = require('json2csv');
 const fs = require('fs-plus');
 const jsonfile = require('jsonfile');
+const imageSize = require('image-size');
 //
 const sizeAndScale = require('../src/ImageOperations').sizeAndScale;
 //
@@ -27,7 +28,8 @@ let JobLoader = function (path, source, dist) {
               value.minQuality,
               value.scale,
               value.targetKB,
-              value.name
+              value.name,
+              value.suffix
             ))
         }
         
@@ -46,17 +48,19 @@ let JobLoader = function (path, source, dist) {
  * @param scale Scaling factor 0-100
  * @param targetKB Desired File size
  * @param name name for job, will also be name for folder.
+ * @param suffix to append
  * @returns {{name: string, scale: *, targetKB: *, minQuality: *, sourceDir: *, outputDir: *}}
  * @constructor
  */
-let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, name = 'defaultName') {
+let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, name = 'defaultName',suffix='') {
   return {
     name: name,
     scale: scale,
     targetKB: targetKB,
     minQuality: minQuality,
     sourceDir: sourceDir,
-    outputDir: outputDir
+    outputDir: outputDir,
+    suffix:suffix
   };
 };
 let JobQueue = function () {
@@ -99,9 +103,25 @@ let RunJob = function (jobConfig) {
     // generator
     function *run() {
       for (let value of files) {
+        
+        // have to get file dimensions here for naming
+  
+        let sourceFile = path.resolve(jobConfig.sourceDir, value);
+        let dimensions = imageSize(sourceFile);
+        
+        let scaler = jobConfig.scale/100;
+        
+        let processedSuffix = jobConfig.suffix
+                              .replace ('WIDTH', Math.round (dimensions.width * scaler))
+                              .replace ('HEIGHT',Math.round (dimensions.height * scaler))
+                              .replace ('SIZE',`${jobConfig.targetKB}K`);
+        
+        
+        let newFileName = path.resolve(jobConfig.outputDir, jobConfig.name, value.replace(/\.(jpg|png|gif)/, `${processedSuffix}.jpg`)  );
+        
         let ret = sizeAndScale(
-          path.resolve(jobConfig.sourceDir, value),
-          path.resolve(jobConfig.outputDir, jobConfig.name, value.replace('.png', '.jpg')),
+          sourceFile,
+          newFileName,
           jobConfig.minQuality,
           jobConfig.scale,
           jobConfig.targetKB
