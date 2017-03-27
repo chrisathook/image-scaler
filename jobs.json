@@ -14,5 +14,7 @@
       "minQuality": 40,
       "suffix":"_WIDTHxHEIGHT"
     }
-  ]
+  ],
+  "sourcePath":"G:\\DOCS\\Out Loud ANEW\\internal projects\\image-scaler\\_source",
+  "outputPath":"G:\\DOCS\\Out Loud ANEW\\internal projects\\image-scaler\\_out"
 }

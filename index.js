@@ -11,17 +11,13 @@ const JobConfig = require('./src/JobRunner').JobConfig;
 const JobQueue = require('./src/JobRunner').JobQueue;
 const JobLoader = require('./src/JobRunner').JobLoader;
 //
-const source = path.resolve(process.cwd(), '_source');
-const dist = path.resolve(process.cwd(), '_out');
+//const source = path.resolve(process.cwd(), '_source');
+//const dist = path.resolve(process.cwd(), '_out');
+
 const jobsPath = path.resolve(process.cwd(), 'jobs.json');
 let run = function () {
   console.log('hello world');
-  if (!fs.existsSync(dist)) {
-    fs.makeTreeSync(dist);
-  } else {
-    rimraf.sync(dist);
-    fs.makeTreeSync(dist);
-  }
+
   /*
    let jobs = [
    JobConfig(source,
@@ -32,7 +28,7 @@ let run = function () {
    'jobOne' // give job a name
    )
    ];*/
-  JobLoader(jobsPath, source, dist).then(function (jobs) {
+  JobLoader(jobsPath).then(function (jobs) {
     const queue = JobQueue();
     queue.runJobs(jobs).then(function () {
       console.log('All Jobs Done')

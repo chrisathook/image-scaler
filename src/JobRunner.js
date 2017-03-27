@@ -8,34 +8,67 @@ const json2csv = require('json2csv');
 const fs = require('fs-plus');
 const jsonfile = require('jsonfile');
 const imageSize = require('image-size');
+const del = require('del');
+let prompt = require('prompt');
 //
 const sizeAndScale = require('../src/ImageOperations').sizeAndScale;
 //
-let JobLoader = function (path, source, dist) {
+let JobLoader = function (jsonPath) {
   return new Promise(function (resolve, reject) {
-    jsonfile.readFile(path, function (err, obj) {
+    jsonfile.readFile(jsonPath, function (err, obj) {
       console.dir(obj);
       if (err) {
         console.error(err);
         reject(err);
       } else {
-        let jobsArray = [];
-        for (let value of obj.jobs) {
-          jobsArray.push(
-            new JobConfig(
-              source,
-              dist,
-              value.minQuality,
-              value.scale,
-              value.targetKB,
-              value.name,
-              value.suffix
-            ))
+        let source = path.resolve(obj.sourcePath);
+        let dist = path.resolve(obj.outputPath);
+        
+        let processJobs = function () {
+          let jobsArray = [];
+          for (let value of obj.jobs) {
+            jobsArray.push(
+              new JobConfig(
+                source,
+                dist,
+                value.minQuality,
+                value.scale,
+                value.targetKB,
+                value.name,
+                value.suffix
+              ))
+          }
+          resolve(jobsArray);
+        };
+  
+        if (!fs.existsSync(source)) {
+    
+          throw new Error('Source directory does not exist: '+source);
+    
         }
         
-        
-        
-        resolve (jobsArray);
+        if (!fs.existsSync(dist)) {
+  
+          throw new Error('Destination directory does not exist: '+dist);
+          
+        } else {
+          console.warn('Destination directory exists and will be cleaned of all files, type yes if you want to proceed');
+          prompt.start();
+          prompt.get(['agree'], function (err, result) {
+            if (err) {
+              throw new Error(err)
+            } else {
+              if (result.agree === 'yes') {
+                del.sync(dist, {force: true});
+                processJobs();
+              } else {
+                
+                console.info('Goodbye');
+                process.exit(0)
+              }
+            }
+          });
+        }
       }
     })
   });
@@ -52,7 +85,7 @@ let JobLoader = function (path, source, dist) {
  * @returns {{name: string, scale: *, targetKB: *, minQuality: *, sourceDir: *, outputDir: *}}
  * @constructor
  */
-let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, name = 'defaultName',suffix='') {
+let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, name = 'defaultName', suffix = '') {
   return {
     name: name,
     scale: scale,
@@ -60,7 +93,7 @@ let JobConfig = function (sourceDir, outputDir, minQuality, scale, targetKB, nam
     minQuality: minQuality,
     sourceDir: sourceDir,
     outputDir: outputDir,
-    suffix:suffix
+    suffix: suffix
   };
 };
 let JobQueue = function () {
@@ -105,20 +138,14 @@ let RunJob = function (jobConfig) {
       for (let value of files) {
         
         // have to get file dimensions here for naming
-  
         let sourceFile = path.resolve(jobConfig.sourceDir, value);
         let dimensions = imageSize(sourceFile);
-        
-        let scaler = jobConfig.scale/100;
-        
+        let scaler = jobConfig.scale / 100;
         let processedSuffix = jobConfig.suffix
-                              .replace ('WIDTH', Math.round (dimensions.width * scaler))
-                              .replace ('HEIGHT',Math.round (dimensions.height * scaler))
-                              .replace ('SIZE',`${jobConfig.targetKB}K`);
-        
-        
-        let newFileName = path.resolve(jobConfig.outputDir, jobConfig.name, value.replace(/\.(jpg|png|gif)/, `${processedSuffix}.jpg`)  );
-        
+          .replace('WIDTH', Math.round(dimensions.width * scaler))
+          .replace('HEIGHT', Math.round(dimensions.height * scaler))
+          .replace('SIZE', `${jobConfig.targetKB}K`);
+        let newFileName = path.resolve(jobConfig.outputDir, jobConfig.name, value.replace(/\.(jpg|png|gif)/, `${processedSuffix}.jpg`));
         let ret = sizeAndScale(
           sourceFile,
           newFileName,
@@ -133,7 +160,7 @@ let RunJob = function (jobConfig) {
     const iterator = run();
     const reporter = JobReporter();
     reporter.createQueue(
-      ['Image Path','Target KB', 'Final KB', 'Final Width', 'Final Height', 'Successful Conversion', 'Notes']
+      ['Image Path', 'Target KB', 'Final KB', 'Final Width', 'Final Height', 'Successful Conversion', 'Notes']
     );
     function step() {
       let item = iterator.next();
