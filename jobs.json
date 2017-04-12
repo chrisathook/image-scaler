@@ -8,10 +8,17 @@
       "suffix":"_WIDTHxHEIGHT"
     },
     {
-      "name": "Job2",
-      "scale": 50,
-      "targetKB": 100,
+      "name": "forceit",
+      "scale": 100,
+      "targetKB": -1,
       "minQuality": 40,
+      "suffix":"_WIDTHxHEIGHT"
+    },
+    {
+      "name": "forceit2",
+      "scale": 100,
+      "targetKB": -1,
+      "minQuality": 80,
       "suffix":"_WIDTHxHEIGHT"
     }
   ],

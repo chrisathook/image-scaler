@@ -14,11 +14,17 @@ let sizeAndScale = function (imagePath, outputPath, minQuality, scale, targetKB)
     let quality = 101;
     let step = function () {
       quality -= 1;
+      
+      if (targetKB===-1){
+        quality = minQuality;
+        
+      }
+      
       processAndReport(imagePath, outputPath, scale, quality, true).then(function (results) {
         let size = Math.round(results.stats.size / kb);
         results.stats.size = size;
         // image will never be what we want
-        if (quality < minQuality && size > targetKB) {
+        if (quality < minQuality && size > targetKB &&  targetKB !==-1) {
           resolve({
             success: false,
             stats: results.stats,
@@ -27,7 +33,7 @@ let sizeAndScale = function (imagePath, outputPath, minQuality, scale, targetKB)
             notes: `File cannot be converted to these dimensions and fileweight:   Target:${targetKB}KB    Actual:${size}KB  `
           
           });
-        } else if (size <= targetKB) {
+        } else if (size <= targetKB || targetKB=== -1 ) {
           // image is the file size we want
           processAndReport(imagePath, outputPath, scale, quality, false).then(function (results) {
             results.stats.size = Math.round(results.stats.size / kb);
